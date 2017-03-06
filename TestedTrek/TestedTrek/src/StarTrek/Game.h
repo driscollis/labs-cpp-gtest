@@ -1,25 +1,36 @@
-#ifndef GAME_HEADER 
-#define GAME_HEADER 
+#ifndef GAME_HEADER
+#define GAME_HEADER
 
-#include <cstdlib>
+
 #include <Untouchables/WebGadget.h>
 
+#include "Phaser.h"
+#include "PhotonTorpedo.h"
+#include "RandGenerator.h"
 
 namespace StarTrek {
 
 class Galaxy;
-
-typedef int(*Random)(void);
-
+class Klingon;
 
 class Game {
 private:
-	int e_;
-	int t_;
+    int phaser_ammo;
+    int photon_torpedos;
 
-	static int rnd(int maximum) {
-		return generator() % maximum; 
-	}
+    Phaser m_phaser;
+    PhotonTorpedo m_photon_torp;
+
+    void hitKlingon( Klingon* enemy, int damage, Galaxy& galaxy );
+
+    bool hasEnoughPhaserAmmo( int amount );
+    bool hasEnoughPhotoTorpedos();
+    void reducePhaserAmmo( int amount );
+    void reducePhotoTorpedos();
+    void photonTorpedoMissed( int distance, Galaxy& galaxy );
+
+    void attackWithPhaser( Klingon* enemy, int amount, int distance, Galaxy& galaxy );
+    void attackPhotonTorpedo( Klingon* enemy, int distance, Galaxy& galaxy );
 
 public:
     Game();
@@ -28,8 +39,6 @@ public:
     int energyRemaining(void);
     void torpedoes(int value);
     int torpedoes(void);
-
-    static Random generator;
 };
 
 }

@@ -1,5 +1,7 @@
 ﻿#include "stdafx.h"
 
+#include <cstddef>
+
 #include <iostream>
 #include <cstdlib>
 #include <string>
@@ -23,22 +25,22 @@ void insertPhaserCommand() {
 
 class GameFixturePhaser : public ::testing::Test {
 public:
-	GameFixturePhaser();
+    GameFixturePhaser();
 
 protected:
-	virtual void SetUp() {
-		galaxyOutput.clear();
-		insertPhaserCommand();
-	}
-	virtual void TearDown() {
-	}
+    virtual void SetUp() {
+        galaxyOutput.clear();
+        insertPhaserCommand();
+    }
+    virtual void TearDown() {
+    }
 
-	// because we are injecting a different Galaxy at link-time,
-	// there is no differentiation here as far as type, namespace, etc
-	Galaxy context;
-	Game game;
+    // because we are injecting a different Galaxy at link-time,
+    // there is no differentiation here as far as type, namespace, etc
+    Galaxy context;
+    Game game;
 };
-GameFixturePhaser::GameFixturePhaser() :context(nullptr){}
+GameFixturePhaser::GameFixturePhaser() :context(NULL){}
 
 
 static const int EnergyInNewGame = 10000;
@@ -72,7 +74,7 @@ TEST_F(GameFixturePhaser, PhasersFiredKlingonDestroyed) {
     MockKlingon* klingon = new MockKlingon(2000, 200);
     galaxyDictionary["amount"] = new string("1000");
     galaxyDictionary["target"] = klingon;
-    Game::generator = &mockRandom;
+    generator = &mockRandom;
     game.fireWeapon(context);
 
     EXPECT_EQ("Phasers hit Klingon at 2000 sectors with 500 units || Klingon destroyed! || ", galaxyOutput);
@@ -85,7 +87,7 @@ TEST_F(GameFixturePhaser, PhasersDamageOfZeroStillHits_AndNondestructivePhaserDa
     string* minimalFired = new string("0");
     galaxyDictionary["amount"] = minimalFired;
     galaxyDictionary["target"] = new MockKlingon(2000, 200);
-    Game::generator = &mockRandom;
+    generator = &mockRandom;
     game.fireWeapon(context);
 
     EXPECT_EQ("Phasers hit Klingon at 2000 sectors with 1 units || Klingon has 199 remaining || ", galaxyOutput);
@@ -95,8 +97,8 @@ TEST_F(GameFixturePhaser, PhasersDamageOfZeroStillHits_AndNondestructivePhaserDa
 
 int main(int argc, char** argv)
 {
-	// run all tests
-	::testing::InitGoogleTest(&argc, argv);
+    // run all tests
+    ::testing::InitGoogleTest(&argc, argv);
 
-	return RUN_ALL_TESTS();
+    return RUN_ALL_TESTS();
 }

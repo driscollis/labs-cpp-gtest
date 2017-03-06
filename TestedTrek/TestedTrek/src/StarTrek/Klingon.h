@@ -8,29 +8,39 @@ namespace StarTrek {
 
 class Klingon {
 protected:
-	int distance_;
-	int energy_;
+    int distance_;
+    int energy_;
 
-public:	
-	Klingon() : distance_(100 + rand() % 4000), energy_(1000+ rand() % 2000) {
-	}
+public:
+    Klingon() : distance_(100 + rand() % 4000), energy_(1000+ rand() % 2000) {
+    }
 
-	virtual ~Klingon() {
+    virtual ~Klingon() {
         }
 
-	int distance(void) {
-		return distance_;
-	}
+    int distance(void) {
+        return distance_;
+    }
 
-	int energy(void) {
-		return energy_;
-	}
+    int energy(void) {
+        return energy_;
+    }
 
-	void energy(int value) {
-		energy_ = value;
-	}
+    void energy(int value) {
+        energy_ = value;
+    }
 
-	virtual void destroy(void); 
+    void hit( int damage )
+    {
+        energy_ -= damage;
+    }
+
+    bool isDead() const
+    {
+        return energy_ <= 0;
+    }
+
+    virtual void destroy(void);
 };
 }
 

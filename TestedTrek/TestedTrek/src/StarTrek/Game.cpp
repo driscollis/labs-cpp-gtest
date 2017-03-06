@@ -8,75 +8,25 @@
 
 namespace StarTrek {
 
-Random Game::generator;
-
-Game::Game() : e_(10000), t_(8) {
-    Game::generator = &rand;
+Game::Game() : phaser_ammo(10000), photon_torpedos(8) {
+    generator = &rand;
 }
 
 void Game::fireWeapon(Galaxy& galaxy) {
-	if (galaxy.parameter("command") == "phaser") {
-		int amount = atoi(galaxy.parameter("amount").c_str());
-		Klingon* enemy = (Klingon*)galaxy.variable("target");
-		if (e_ >= amount) {
-			int distance = enemy->distance();
-			if (distance > 4000) {
-				stringstream message;
-				message << "Klingon out of range of phasers at " << distance << " sectors...";
-				galaxy.writeLine(message.str());
-			} else {
-				int damage = amount - (((amount /20)* distance /200) + rnd(200));
-				if (damage < 1)
-					damage = 1;
-				stringstream message;
-				message << "Phasers hit Klingon at " << distance << " sectors with " << damage << " units";
-				galaxy.writeLine(message.str());
-				if (damage < enemy->energy()) {
-					enemy->energy(enemy->energy() - damage);
-					stringstream message;
-					message << "Klingon has " << enemy->energy() << " remaining";
-					galaxy.writeLine(message.str());
-				} else {
-					galaxy.writeLine("Klingon destroyed!");
-					enemy->destroy();
-				}
-			}
-			e_ -= amount;
+    Klingon* enemy = (Klingon*)galaxy.variable("target");
+    int distance = -1;
+    if ( enemy )
+    {
+        distance = enemy->distance();
+    }
 
-		} else {
-			galaxy.writeLine("Insufficient energy to fire phasers!");
-		}
+    if (galaxy.parameter("command") == "phaser") {
+        int amount = atoi(galaxy.parameter("amount").c_str());
+        attackWithPhaser( enemy, amount, distance, galaxy );
 
-	} else if (galaxy.parameter("command") == "photon") {
-		Klingon* enemy = (Klingon*)galaxy.variable("target");
-		if (t_ > 0) {
-			int distance = enemy->distance();
-			if ((rnd(4) + ((distance / 500) + 1) > 7)) {
-				stringstream message;
-				message << "Torpedo missed Klingon at " << distance << " sectors...";
-				galaxy.writeLine(message.str());
-			} else {
-				int damage = 800 + rnd(50);
-				stringstream message;
-				message << "Photons hit Klingon at " << distance << " sectors with " << damage << " units";
-				galaxy.writeLine(message.str());
-
-				if (damage < enemy->energy()) {
-					enemy->energy(enemy->energy() - damage);
-					stringstream message;
-					message << "Klingon has " << enemy->energy() << " remaining";
-					galaxy.writeLine(message.str());
-				} else {
-					galaxy.writeLine("Klingon destroyed!");
-					enemy->destroy();
-				}
-			}
-			t_--;
-
-		} else {
-			galaxy.writeLine("No more photon torpedoes!");
-		}
-	}
+    } else if (galaxy.parameter("command") == "photon") {
+        attackPhotonTorpedo( enemy, distance, galaxy );
+    }
 }
 
 void Game::fireWeapon(Untouchables::WebGadget* webGadget) {
@@ -85,15 +35,101 @@ void Game::fireWeapon(Untouchables::WebGadget* webGadget) {
 }
 
 int Game::energyRemaining(void) {
-    return e_;
+    return phaser_ammo;
 }
 
 int Game::torpedoes(void) {
-    return t_;
+    return photon_torpedos;
 }
 
 void Game::torpedoes(int value) {
-    t_ = value;
+    photon_torpedos = value;
+}
+
+void Game::hitKlingon( Klingon* enemy, int damage, Galaxy& galaxy )
+{
+    enemy->hit( damage );
+
+    if ( enemy->isDead() )
+    {
+        galaxy.writeLine("Klingon destroyed!");
+        enemy->destroy();
+    }
+    else
+    {
+        stringstream message;
+        message << "Klingon has " << enemy->energy() << " remaining";
+        galaxy.writeLine(message.str());
+    }
+}
+
+bool Game::hasEnoughPhaserAmmo( int amount )
+{
+    return phaser_ammo >= amount;
+}
+
+bool Game::hasEnoughPhotoTorpedos()
+{
+    return photon_torpedos > 0;
+}
+
+void Game::reducePhaserAmmo( int amount )
+{
+    phaser_ammo -= amount;
+}
+
+void Game::reducePhotoTorpedos()
+{
+    --photon_torpedos;
+}
+
+void Game::attackWithPhaser( Klingon* enemy, int amount, int distance,
+    Galaxy& galaxy )
+{
+    if ( hasEnoughPhaserAmmo( amount ) ) {
+        if ( !m_phaser.arePhasersInRange(distance) ) {
+            stringstream message;
+            message << "Klingon out of range of phasers at " << distance << " sectors...";
+            galaxy.writeLine(message.str());
+        } else {
+            int damage = m_phaser.getPhaserDamage( amount, distance );
+            stringstream message;
+            message << "Phasers hit Klingon at " << distance << " sectors with " << damage << " units";
+            galaxy.writeLine(message.str());
+            hitKlingon( enemy, damage, galaxy );
+        }
+        reducePhaserAmmo( amount );
+
+    } else {
+        galaxy.writeLine("Insufficient energy to fire phasers!");
+    }
+}
+
+void Game::attackPhotonTorpedo( Klingon* enemy, int distance, Galaxy& galaxy )
+{
+    if ( hasEnoughPhotoTorpedos() ) {
+        if ( !m_photon_torp.didTorpedoHit( distance ) ) {
+            photonTorpedoMissed( distance, galaxy );
+        } else {
+            int damage = m_photon_torp.getPhotonTorpDamage();
+            stringstream message;
+            message << "Photons hit Klingon at " << distance << " sectors with " << damage << " units";
+            galaxy.writeLine(message.str());
+
+            hitKlingon( enemy, damage, galaxy );
+        }
+        reducePhotoTorpedos();
+
+    } else {
+        galaxy.writeLine("No more photon torpedoes!");
+    }
+}
+
+void Game::photonTorpedoMissed( int distance, Galaxy& galaxy )
+{
+    stringstream message;
+    message << "Torpedo missed Klingon at " << distance << " sectors...";
+    galaxy.writeLine(message.str());
 }
 
 }

@@ -27,25 +27,25 @@ static int mockRandom(void) {
 
 class GameFixturePhoton : public ::testing::Test {
 public:
-	GameFixturePhoton();
+    GameFixturePhoton();
 
 protected:
-	virtual void SetUp() {
-		Game::generator = &mockRandom; // without this the test would often fail
-		galaxyOutput.clear();
-		insertPhotonCommand();
-	}
-	virtual void TearDown() {
-		// typically, we would want to save off the existing value in the setup and then restore it in the teardown
-		Game::generator = &rand;
-	}
+    virtual void SetUp() {
+        generator = &mockRandom; // without this the test would often fail
+        galaxyOutput.clear();
+        insertPhotonCommand();
+    }
+    virtual void TearDown() {
+        // typically, we would want to save off the existing value in the setup and then restore it in the teardown
+        generator = &rand;
+    }
 
-	// because we are injecting a different Galaxy at link-time,
-	// there is no differentiation here as far as type, namespace, etc
-	Galaxy context;
-	Game game;
+    // because we are injecting a different Galaxy at link-time,
+    // there is no differentiation here as far as type, namespace, etc
+    Galaxy context;
+    Game game;
 };
-GameFixturePhoton::GameFixturePhoton() :context(nullptr){}
+GameFixturePhoton::GameFixturePhoton() :context(NULL){}
 
 TEST_F(GameFixturePhoton, NotifiedIfNoTorpedoesRemain) {
     game.torpedoes(0);
