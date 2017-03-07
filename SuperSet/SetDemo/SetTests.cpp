@@ -174,6 +174,21 @@ TEST(SuperSet, bothSetsHaveDataUnion)
     EXPECT_EQ( true, union1.contains(2) );
 }
 
+TEST(SuperSet, unionIsReversible)
+{
+    Set set1;
+    Set set2;
+
+    set1.add(2);
+    set1.add(7);
+    set2.add(10);
+    set2.add(11);
+
+    Set union_1_to_2 = set1.getUnion(set2);
+    Set union_2_to_1 = set2.getUnion(set1);
+
+}
+
 
 /*TEST(SuperSet, InitialSizeIsZero) {
     Set set;

@@ -39,8 +39,8 @@ profile:
     self: gtest
 
   - name: lunexTest
-    src:  Lunex
-    main: Lunex/StockQuoteTests/StockQuoteTests.cpp
+    src:  LunEx/src/stockquote.cpp
+    main: LunEx/StockQuoteTests/StockQuoteTests.cpp
     self: gmock
 
   - name: setTest
